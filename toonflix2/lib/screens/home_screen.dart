@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:toonflix2/models/webtoon_model.dart';
 import 'package:toonflix2/services/api_service.dart';
+import 'package:toonflix2/widgets/webtoon_widget.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -54,36 +55,8 @@ class HomeScreen extends StatelessWidget {
       },
       itemBuilder: (context, index) {
         var webtoon = snapshot.data![index];
-        print(webtoon.thumb);
-        return Column(
-          children: [
-            Container(
-              clipBehavior: Clip.hardEdge,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                      blurRadius: 15,
-                      offset: const Offset(10, 10),
-                      color: Colors.black.withOpacity(0.5))
-                ],
-              ),
-              width: 250,
-              child: Image.network(
-                  'https://search.pstatic.net/common/?src=http%3A%2F%2Fblogfiles.naver.net%2F20140501_89%2Fsalt418_1398945104429qhh53_JPEG%2F1.JPG&type=sc960_832'),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Text(
-              webtoon.title,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        );
+        return Webtoon(
+            title: webtoon.title, thumb: webtoon.thumb, id: webtoon.id);
       },
     );
   }
