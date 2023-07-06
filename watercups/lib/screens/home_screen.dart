@@ -23,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 50,
             ),
             const Text(
-              "My daily steps",
+              "My daily water cups",
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 20,
@@ -44,26 +44,52 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(20),
                 color: Theme.of(context).cardColor,
               ),
-              child: const Padding(
-                padding: EdgeInsets.all(30),
+              child: Padding(
+                padding: const EdgeInsets.all(30),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Icon(
-                      Icons.run_circle,
+                    const Icon(
+                      Icons.water_drop_outlined,
                       size: 40,
                     ),
-                    SizedBox(width: 40),
-                    Text(
-                      "150 steps",
-                      style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 25,
-                          fontWeight: FontWeight.w600),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          "3 cups",
+                          style: TextStyle(
+                              color: Colors.black87,
+                              fontSize: 25,
+                              fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          "150ml",
+                          style: TextStyle(
+                              color: Colors.black.withOpacity(0.7),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600),
+                        ),
+                      ],
+                    ),
+                    const Icon(
+                      Icons.add_circle,
+                      size: 40,
                     )
                   ],
                 ),
               ),
             ),
+            const SizedBox(
+              height: 15,
+            ),
+            Text(
+              "set my cup!",
+              style: TextStyle(
+                  fontSize: 18,
+                  color: Theme.of(context).textTheme.displayLarge!.color),
+            )
           ],
         ),
       ),

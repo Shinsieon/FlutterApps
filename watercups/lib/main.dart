@@ -12,9 +12,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
         theme: ThemeData(
-            textTheme: const TextTheme(
+            textTheme: TextTheme(
               displayLarge: TextStyle(
-                color: Color(0xFF232B55),
+                color: Colors.blue[700],
               ),
             ),
             cardColor: const Color(0xFFF4EDDB),
