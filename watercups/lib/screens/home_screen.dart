@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -8,6 +9,36 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late SharedPreferences prefs;
+  late int cupofwaterToday;
+
+  Future initPref() async {
+    prefs = await SharedPreferences.getInstance();
+    cupofwaterToday = prefs.getInt('cupofwaterToday') ?? 0;
+  }
+
+  void plusCup() async {
+    await prefs.setInt('cupofwaterToday', cupofwaterToday);
+    setState(() {
+      cupofwaterToday += 1;
+    });
+  }
+
+  void minusCup() async {
+    await prefs.setInt('cupofwaterToday', cupofwaterToday);
+    setState(() {
+      cupofwaterToday -= 1;
+      if (cupofwaterToday < 0) cupofwaterToday = 0;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    print("initstate!");
+    initPref();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -56,9 +87,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        const Text(
-                          "3 cups",
-                          style: TextStyle(
+                        Text(
+                          "$cupofwaterToday cups",
+                          style: const TextStyle(
                               color: Colors.black87,
                               fontSize: 25,
                               fontWeight: FontWeight.w600),
@@ -73,9 +104,20 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                    const Icon(
-                      Icons.add_circle,
-                      size: 40,
+                    GestureDetector(
+                      onTap: plusCup,
+                      child: const Icon(
+                        Icons.add_circle,
+                        size: 30,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: minusCup,
+                      child: Icon(
+                        Icons.remove_circle,
+                        color: Colors.red[400],
+                        size: 30,
+                      ),
                     )
                   ],
                 ),
