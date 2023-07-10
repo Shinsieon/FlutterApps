@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:watercups/my_flutter_app_icons.dart';
-import 'package:watercups/widgets/chart.dart';
-//import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:watercups/widgets/DrinksLineChart.dart';
+import 'package:firebase_core/firebase_core.dart';
+import '../firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../widgets/CupItem.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,6 +21,23 @@ class _HomeScreenState extends State<HomeScreen> {
   static const sizeofCoffe = 350;
   var cupofwaterToday = 0;
   var sizeofCup = sizeofPet; //default size
+  late var db;
+  var userData = [];
+
+  Future initFireStore() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    db = FirebaseFirestore.instance;
+
+    await db.collection("dailyCupsOfWater").get().then((event) {
+      for (var doc in event.docs) {
+        userData = doc.data()['shinsieon']['drinks'];
+
+        setState(() {});
+      }
+    });
+  }
 
   Future initPref() async {
     prefs = await SharedPreferences.getInstance();
@@ -31,7 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
         sizeofCup = prefs.getInt('sizeofCup')!;
       });
     }
-    print(sizeofCup);
   }
 
   void plusCup() async {
@@ -58,8 +77,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    print("initstate!");
     initPref();
+    initFireStore();
   }
 
   @override
@@ -208,60 +227,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            const LineChartSample2()
+            DrinksLineChart(
+              userData: userData,
+            )
           ],
         ),
-      ),
-    );
-  }
-}
-
-class CupItem extends StatelessWidget {
-  final String cupName;
-  final IconData cupIcon;
-  final int cupSize;
-  final bool chosen;
-  const CupItem({
-    super.key,
-    required this.cupName,
-    required this.cupIcon,
-    required this.cupSize,
-    required this.chosen,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: chosen ? Colors.blue : Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-              blurRadius: chosen ? 15 : 0,
-              offset: chosen ? const Offset(10, 10) : const Offset(0, 0),
-              color: chosen ? Colors.black.withOpacity(0.5) : Colors.black)
-        ],
-      ),
-      padding: const EdgeInsets.all(10),
-      child: Column(
-        children: [
-          Text(
-            cupName,
-            style: TextStyle(
-              color: chosen ? Colors.white : Colors.black,
-            ),
-          ),
-          Icon(
-            cupIcon,
-            color: chosen ? Colors.white : Colors.black,
-          ),
-          Text(
-            "${cupSize}ml",
-            style: TextStyle(
-              color: chosen ? Colors.white : Colors.black,
-            ),
-          ),
-        ],
       ),
     );
   }
