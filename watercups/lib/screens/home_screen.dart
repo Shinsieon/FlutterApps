@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:watercups/my_flutter_app_icons.dart';
+import 'package:watercups/widgets/chart.dart';
+//import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,26 +13,46 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   late SharedPreferences prefs;
-  late int cupofwaterToday;
+  static const sizeofBottle = 750;
+  static const sizeofPet = 500;
+  static const sizeofCoffe = 350;
+  var cupofwaterToday = 0;
+  var sizeofCup = sizeofPet; //default size
 
   Future initPref() async {
     prefs = await SharedPreferences.getInstance();
-    cupofwaterToday = prefs.getInt('cupofwaterToday') ?? 0;
+    if (prefs.getInt('cupofwaterToday') != null) {
+      setState(() {
+        cupofwaterToday = prefs.getInt('cupofwaterToday')!;
+      });
+    }
+    if (prefs.getInt('sizeofCup') != null) {
+      setState(() {
+        sizeofCup = prefs.getInt('sizeofCup')!;
+      });
+    }
+    print(sizeofCup);
   }
 
   void plusCup() async {
+    cupofwaterToday += 1;
+
     await prefs.setInt('cupofwaterToday', cupofwaterToday);
-    setState(() {
-      cupofwaterToday += 1;
-    });
+    setState(() {});
   }
 
   void minusCup() async {
+    cupofwaterToday -= 1;
+    if (cupofwaterToday < 0) cupofwaterToday = 0;
+
     await prefs.setInt('cupofwaterToday', cupofwaterToday);
-    setState(() {
-      cupofwaterToday -= 1;
-      if (cupofwaterToday < 0) cupofwaterToday = 0;
-    });
+    setState(() {});
+  }
+
+  void setSizeofCup<int>(item) async {
+    sizeofCup = item;
+    await prefs.setInt('sizeofCup', sizeofCup);
+    setState(() {});
   }
 
   @override
@@ -96,7 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          "150ml",
+                          "${sizeofCup}ml",
                           style: TextStyle(
                               color: Colors.black.withOpacity(0.7),
                               fontSize: 15,
@@ -131,9 +154,114 @@ class _HomeScreenState extends State<HomeScreen> {
               style: TextStyle(
                   fontSize: 18,
                   color: Theme.of(context).textTheme.displayLarge!.color),
-            )
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Theme.of(context).cardColor,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    GestureDetector(
+                      onTap: () => setSizeofCup(sizeofPet),
+                      child: CupItem(
+                        cupName: "Pet",
+                        cupIcon: MyFlutterApp.cup_1,
+                        cupSize: sizeofPet,
+                        chosen: (sizeofPet == sizeofCup),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => setSizeofCup(sizeofBottle),
+                      child: CupItem(
+                        cupName: "Bottle",
+                        cupIcon: MyFlutterApp.cup,
+                        cupSize: sizeofBottle,
+                        chosen: sizeofBottle == sizeofCup,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => setSizeofCup(sizeofCoffe),
+                      child: CupItem(
+                        cupName: "Coffee",
+                        cupIcon: Icons.coffee,
+                        cupSize: sizeofCoffe,
+                        chosen: sizeofCoffe == sizeofCup,
+                      ),
+                    ),
+                    GestureDetector(
+                      child: const Column(
+                        children: [
+                          Text("Custom"),
+                          Icon(Icons.add_circle_outline_outlined),
+                          Text("__ml"),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const LineChartSample2()
           ],
         ),
+      ),
+    );
+  }
+}
+
+class CupItem extends StatelessWidget {
+  final String cupName;
+  final IconData cupIcon;
+  final int cupSize;
+  final bool chosen;
+  const CupItem({
+    super.key,
+    required this.cupName,
+    required this.cupIcon,
+    required this.cupSize,
+    required this.chosen,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: chosen ? Colors.blue : Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+              blurRadius: chosen ? 15 : 0,
+              offset: chosen ? const Offset(10, 10) : const Offset(0, 0),
+              color: chosen ? Colors.black.withOpacity(0.5) : Colors.black)
+        ],
+      ),
+      padding: const EdgeInsets.all(10),
+      child: Column(
+        children: [
+          Text(
+            cupName,
+            style: TextStyle(
+              color: chosen ? Colors.white : Colors.black,
+            ),
+          ),
+          Icon(
+            cupIcon,
+            color: chosen ? Colors.white : Colors.black,
+          ),
+          Text(
+            "${cupSize}ml",
+            style: TextStyle(
+              color: chosen ? Colors.white : Colors.black,
+            ),
+          ),
+        ],
       ),
     );
   }
