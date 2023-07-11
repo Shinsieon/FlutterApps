@@ -1,11 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:watercups/my_flutter_app_icons.dart';
 import 'package:watercups/widgets/DrinksLineChart.dart';
-import 'package:firebase_core/firebase_core.dart';
-import '../firebase_options.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/CupItem.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,52 +20,86 @@ class _HomeScreenState extends State<HomeScreen> {
   static const sizeofPet = 500;
   static const sizeofCoffe = 350;
   var cupofwaterToday = 0;
+  var totalAmount = 0;
   var sizeofCup = sizeofPet; //default size
-  late var db;
-  var userData = [];
 
-  Future initFireStore() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    db = FirebaseFirestore.instance;
+  Map<String, dynamic> userData = {};
 
-    await db.collection("dailyCupsOfWater").get().then((event) {
-      for (var doc in event.docs) {
-        userData = doc.data()['shinsieon']['drinks'];
+  // Future initFireStore() async {
+  //   await Firebase.initializeApp(
+  //     options: DefaultFirebaseOptions.currentPlatform,
+  //   );
+  //   db = FirebaseFirestore.instance;
 
-        setState(() {});
-      }
-    });
-  }
+  //   await db.collection("dailyCupsOfWater").get().then((event) {
+  //     for (var doc in event.docs) {
+  //       userData = doc.data()['shinsieon']['drinks'];
+
+  //       setState(() {});
+  //     }
+  //   });
+  // }
 
   Future initPref() async {
     prefs = await SharedPreferences.getInstance();
+    if (prefs.getString('dailyWaterAmount') != null) {
+      var ud = prefs.getString('dailyWaterAmount') ?? "";
+      userData = jsonDecode(ud);
+      var lastDate = userData.keys.toList().last;
+      if (int.parse(lastDate) < int.parse(getYesterDay(DateTime.now()))) {
+        //가장 마지막 기록된 날부터 현재까지 없으면 다 0으로 저장.
+        while (lastDate == getToday()) {
+          userData[getTomorrow(DateTime.parse(lastDate))] = 0;
+          lastDate = getTomorrow(DateTime.parse(lastDate));
+        }
+      }
+    }
     if (prefs.getInt('cupofwaterToday') != null) {
-      setState(() {
-        cupofwaterToday = prefs.getInt('cupofwaterToday')!;
-      });
+      cupofwaterToday = prefs.getInt('cupofwaterToday')!;
     }
     if (prefs.getInt('sizeofCup') != null) {
-      setState(() {
-        sizeofCup = prefs.getInt('sizeofCup')!;
-      });
+      sizeofCup = prefs.getInt('sizeofCup')!;
+      totalAmount = userData[getToday()] ?? 0;
     }
+    setState(() {});
+  }
+
+  String getToday() {
+    return DateFormat('yyyyMMdd').format(DateTime.now());
+  }
+
+  String getTomorrow<DateTime>(date) {
+    return DateFormat('yyyyMMdd').format(date.add(const Duration(days: 1)));
+  }
+
+  String getYesterDay<DateTime>(date) {
+    return DateFormat('yyyyMMdd')
+        .format(date.subtract(const Duration(days: 1)));
+  }
+
+  void updateUserData() async {
+    userData[getToday()] = (cupofwaterToday * sizeofCup);
+    await prefs.setString('dailyWaterAmount', jsonEncode(userData));
+    await prefs.setInt('cupofwaterToday', cupofwaterToday);
+    setState(() {});
+
+    //userData['']
   }
 
   void plusCup() async {
     cupofwaterToday += 1;
-
-    await prefs.setInt('cupofwaterToday', cupofwaterToday);
-    setState(() {});
+    totalAmount += sizeofCup;
+    updateUserData();
   }
 
   void minusCup() async {
     cupofwaterToday -= 1;
-    if (cupofwaterToday < 0) cupofwaterToday = 0;
-
-    await prefs.setInt('cupofwaterToday', cupofwaterToday);
-    setState(() {});
+    totalAmount -= sizeofCup;
+    if (cupofwaterToday <= 0 || totalAmount <= 0) {
+      cupofwaterToday = 0;
+      totalAmount = 0;
+    }
+    updateUserData();
   }
 
   void setSizeofCup<int>(item) async {
@@ -78,7 +112,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     initPref();
-    initFireStore();
   }
 
   @override
@@ -138,7 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(width: 10),
                         Text(
-                          "${sizeofCup}ml",
+                          "${totalAmount}ml",
                           style: TextStyle(
                               color: Colors.black.withOpacity(0.7),
                               fontSize: 15,
