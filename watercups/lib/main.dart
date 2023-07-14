@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:watercups/screens/home_screen.dart';
+import 'package:watercups/screens/login_screen.dart';
 
 //import 'package:firebase_auth/firebase_auth.dart';
 void main() async {
@@ -27,7 +27,7 @@ class _MyAppState extends State<MyApp> {
             colorScheme: ColorScheme.fromSwatch(
                 backgroundColor: const Color(0xFFFFF5ee))),
         home: const Scaffold(
-          body: HomeScreen(),
+          body: LoginScreen(),
         ));
   }
 }
